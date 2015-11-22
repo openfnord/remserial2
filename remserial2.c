@@ -1,6 +1,7 @@
 /*
  * remserial
  * Copyright (C) 2000  Paul Davis, pdavis@lpccomp.bc.ca
+ * Copyright (C) 2015  Ludwig Jaffe, ludwig.jaffe@gmail.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -606,7 +607,10 @@ void usage(char *progname) {
 
 
 void version(char *progname) {
-	printf("%s version 1.4Mod1.\n",progname);
+	printf("%s version 1.0\n",progname);
+	printf("By Ludwig Jaffe based on remserial 1.4 by Paul Davis\n",progname);
+	printf("License: GPLv2\n",progname);
+
 }
 
 
