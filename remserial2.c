@@ -26,7 +26,7 @@
  * simplestcodings.blogspot.com/2010/08/hex-dump-file-in-c.html
  *
  */
- 
+#include "parser.h" 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

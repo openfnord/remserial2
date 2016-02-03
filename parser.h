@@ -28,7 +28,7 @@
 #define BYTEPOSITION_DATALEN        4  // Relative to plain response
 #define BYTEPOSITION_FIRST_DATA     5  // Relative to plain response
 
-BYTEPOSITION_MAX_DATA       121 + BYTEPOSITION_FIRST_DATA  // Relative to plain response
+#define BYTEPOSITION_MAX_DATA       121 + BYTEPOSITION_FIRST_DATA  // Relative to plain response
     
 //FOOTER 
 #define FOOTER_LENGTH			3   //	  3= CRC + DLE + EOF
