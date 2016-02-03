@@ -41,4 +41,22 @@
 #define MINIMAL_RESPONSE_LENGTH		BYTEPOSITION_FIRST_DATA + FOOTER_LENGTH
 
 
+/*TODO:
+We need to make a parser interface, a good one.
+So one would be a function prototype that has a zero implementation, a 
+zerro parser and a pointer that points to it by default if there is no
+parser.
+But we could also have a parser that is more flexible!
+Lets make a tcp socket where we put the traffic to be parsed in,
+and get the traffic to be parsed out. 
+And then, we put the traffic out at our tcp socket to the client.
+
+You see, we dont need a parser, we just need a parser that talks tcp
+on both sides!!
+So we connect remserial to one side of the parser and the client to the
+other side of the parser very flexible using tcp/ip.
+
+So dont write a parser?
+
+
 
