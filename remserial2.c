@@ -406,6 +406,15 @@ int main(int argc, char *argv[])
 //\hexdump
 
 
+//HOOK FOR PARSER
+/*Parser will be a prototype of a parser that does only memcopy.
+A function pointer of that prototype gets called in order to parse the traffic and to
+"copy" data from the inbuffer to the outbuffer.
+We provide pointer to inbuffer, outbuffer and direction (TX or RX)
+The rest like states is done by the parser using static variables
+*/
+
+
 			if ( devbytes <= 0 ) {
 				if ( debug>0 )
 					syslog(LOG_INFO,"%s closed",sdevname);
