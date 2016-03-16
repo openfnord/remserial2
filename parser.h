@@ -57,6 +57,7 @@ So we connect remserial to one side of the parser and the client to the
 other side of the parser very flexible using tcp/ip.
 
 So dont write a parser?
+*/
 
 
 
