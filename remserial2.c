@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 	gettimeofday(&tv, NULL);
 	timestartms = ((tv.tv_sec) * 1000 + (tv.tv_usec) / 1000) ; // convert tv_sec & tv_usec to ms
 
-		while ( (c=getopt(argc,argv,"del:m:p:r:st:uvwx:Hh")) != EOF )
+		while ( (c=getopt(argc,argv,"del:m:p:r:st:uvwx:Hh")) != -1 )
 			switch (c) {
 			case 'd':
                 		parsed_args++;
