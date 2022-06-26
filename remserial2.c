@@ -2,6 +2,7 @@
  * remserial
  * Copyright (C) 2000  Paul Davis, pdavis@lpccomp.bc.ca
  * Copyright (C) 2015  Ludwig Jaffe, ludwig.jaffe@gmail.com
+ * Copyright (C) 2022  Ludwig Jaffe
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +26,13 @@
  * contains code from hexdump example of  
  * simplestcodings.blogspot.com/2010/08/hex-dump-file-in-c.html
  *
+ * Extended 2022 by Ludwig Jaffe
+ * and will now contain proper time stamping in miliseconds
+ *
  */
 #include "parser.h" 
 #include <stdio.h>
+#include <time.h>  //for time stamping
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
@@ -80,6 +85,10 @@ void link_slave(int fd);
 void dumpbuf(int count, char * buffer, int left_right); 
 void print_timestamp();
 
+time_t time_at_start, now;  //hold time
+clock_t tick, tock;	//miliseconds get read into here, tick is start, tock is end of sth
+struct tm * ptm;
+
 
 /* Clear the display line.  */
 void   clear_line (char *line, int size);
@@ -113,12 +122,27 @@ int main(int argc, char *argv[])
 	int maxConnects = 1;
 	int writeonly = 0;
         int parsed_args =0;
+	int milliseconds =0;
 	register int i;
 	struct timeval  tv;
 	double time_in_ms=0;
 	
+
+	//init
+
 	gettimeofday(&tv, NULL);
 	timestartms = ((tv.tv_sec) * 1000 + (tv.tv_usec) / 1000) ; // convert tv_sec & tv_usec to ms
+
+	//try better way using time.h
+	now = time(NULL);
+	time_at_start = time(NULL);
+	ptm = gmtime ( &time_at_start );
+	printf("time at start: %d:%d:%d:%d\n",ptm->tm_hour,ptm->tm_min,ptm->tm_sec, milliseconds );	
+
+
+
+	//\init
+	//parse command line
 
 		while ( (c=getopt(argc,argv,"del:m:p:r:st:uvwx:Hh")) != -1 )
 			switch (c) {
@@ -219,8 +243,10 @@ int main(int argc, char *argv[])
 			usage(argv[0]);
 			exit(1);
 			}
-	
-		if (loud) printf("optind %d",optind);	
+
+		//done parsing cmd line
+		//
+		if (loud) printf("\noptind %d",optind);	
 
 		sdevname = argv[optind];
 		remotefd = (int *) malloc (maxConnects * sizeof(int));
@@ -346,6 +372,7 @@ int main(int argc, char *argv[])
 
 		while (1) {
 
+
 			/* Wait for data from the listening socket, the device
 			   or the remote connection */
 			fdsreaduse = fdsread;
@@ -384,14 +411,24 @@ int main(int argc, char *argv[])
 				}
 			}
 
+			//sample start time of buffer read : tick
+			if (timestamps) { tick=clock(); }
+			
 			/* Data to read from the device */
 			if ( FD_ISSET(devfd,&fdsreaduse) ) {
 
 				devbytes = read(devfd,devbuf,DEVBUFSIZE);
+
+		  	//sample end time of buffer read : tock
+		        if (timestamps) { tock=clock(); }
+		  
+		  
 			//if ( debug>1 && devbytes>0 )
 			if (debug>1)
 				syslog(LOG_INFO,"Device: %d bytes",devbytes);
 
+
+		        if (timestamps) {  print_timestamp(1); }  //position 0 or 1 according to hexdump
 //hexdump		
 			if ( hexdump==1) {
 			//hexdump device read to console
@@ -449,13 +486,21 @@ The rest like states is done by the parser using static variables
 		for (i=0 ; i<curConnects ; i++)
 			if (FD_ISSET(remotefd[i],&fdsreaduse) ) {
 
+				//sample start time of buffer read : tick
+				if (timestamps) { tick=clock(); }
+			
 				devbytes = read(remotefd[i],devbuf,DEVBUFSIZE);
+
+		  		//sample end time of buffer read : tock
+		        	if (timestamps) { tock=clock(); }
 
 				//if ( debug>1 && devbytes>0 )
 				if (debug>1)
 					syslog(LOG_INFO,"Remote: %d bytes",devbytes);
 
 
+//time stamps
+		        if (timestamps) {  print_timestamp(0); }  //position 0 or 1 according to hexdump
 //hexdump		
 			if ( hexdump==1) {
 			//hexdump network read to console
@@ -693,7 +738,7 @@ void dumpbuf(int count, char * buffer, int left_right)
             ascii_offset = ascii(ascii_offset, c);
  
         }
-	if (timestamps) print_timestamp();
+
         printf("%s\n", line);
     }
 }
@@ -730,13 +775,24 @@ char * hex(char *position, int c)
     return (position+offset);
 }
 
-void print_timestamp()
+void print_timestamp(int left_right)
 {
-	struct timeval  tv;
-	double timediff;
-	gettimeofday(&tv, NULL);
-	timediff = ((tv.tv_sec) * 1000 + (tv.tv_usec) / 1000) - timestartms ; // convert tv_sec & tv_usec to ms
-	printf("%f :",timediff);
+	//commented out as we want to use an other approach to do time stamps
+//	struct timeval  tv;
+//	double timediff;
+//	gettimeofday(&tv, NULL);
+//	timediff = ((tv.tv_sec) * 1000 + (tv.tv_usec) / 1000) - timestartms ; // convert tv_sec & tv_usec to ms
+//	printf("%f :",timediff);
+
+	clock_t	td_start;
+	clock_t tburst;
+
+	td_start = tock - time_at_start;  //get time since program start
+	tburst= tock - tick; //get time for one data read
+
+	//@todo add offset to time stamp for left and right column (rx vs tx)
+	printf("\ntime %d : burstlen %d >\n", td_start, tburst);	//print time since start in ms : transmission length in ms
+
 }
 
 
